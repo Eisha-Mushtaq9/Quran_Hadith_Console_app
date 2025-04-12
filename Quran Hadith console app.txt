@@ -1,0 +1,154 @@
+import requests
+from playsound import playsound 
+
+# Quran API
+QURAN_API = "https://api.alquran.cloud/v1"
+
+# Hadith API
+HADITH_API = "https://hadithapi.com/api"
+HADITH_API_KEY = "$2y$10$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e"
+
+#QURAN FUNCTIONS
+
+def list_surahs():
+    response = requests.get(f"{QURAN_API}/surah")
+    if response.status_code == 200:
+        surahs = response.json()['data']
+        for surah in surahs:
+            print(f"{surah['number']}. {surah['englishName']} ({surah['name']})")
+    else:
+        print("Error fetching Surahs.")
+
+def get_surah(surah_number):
+    response = requests.get(f"{QURAN_API}/surah/{surah_number}")
+    if response.status_code == 200:
+        ayahs = response.json()['data']['ayahs']
+        for ayah in ayahs:
+            print(f"{ayah['numberInSurah']}. {ayah['text']}")
+    else:
+        print("Invalid Surah number or API error.")
+
+def get_translation(surah_number, ayah_number):
+    response = requests.get(f"{QURAN_API}/ayah/{surah_number}:{ayah_number}/ur.maududi")
+    if response.status_code == 200:
+        translation = response.json()['data']['text']
+        print(f"Translation: {translation}")
+    else:
+        print("Invalid Surah or Ayah number.")
+
+def play_recitation(surah_number, ayah_number):
+    response = requests.get(f"{QURAN_API}/ayah/{surah_number}:{ayah_number}/ar.abdurrahmaansudais")
+    if response.status_code == 200:
+        audio_url = response.json()['data']['audio']
+        print(f"Playing recitation: {audio_url}")
+        # playsound(audio_url)  # Uncomment if running locally
+    else:
+        print("Error playing recitation.")
+
+#HADITH FUNCTIONS
+
+def list_hadith_books():
+    response = requests.get(f"{HADITH_API}/books?apiKey={HADITH_API_KEY}")
+    if response.status_code == 200:
+        books = response.json()['books']
+        for book in books:
+            print(f"{book['bookSlug']} - {book['bookName']} | Chapters: {book['chapters_count']} | Hadiths: {book['hadiths_count']}")
+    else:
+        print("Error fetching Hadith books.")
+
+def get_chapters(book_slug):
+    response = requests.get(f"{HADITH_API}/{book_slug}/chapters?apiKey={HADITH_API_KEY}")
+    if response.status_code == 200:
+        chapters = response.json()['chapters']
+        for chapter in chapters:
+            print(f"{chapter['chapterNumber']}. {chapter['chapterArabic']} | {chapter['chapterUrdu']} | {chapter['chapterEnglish']}")
+    else:
+        print("Invalid book slug or API error.")
+
+def get_hadith(book_slug, chapter_number):
+    response = requests.get(f"{HADITH_API}/hadiths?apiKey={HADITH_API_KEY}&book={book_slug}&chapter={chapter_number}&paginate=100000")
+    if response.status_code == 200:
+        hadiths = response.json()['hadiths']['data']
+        for hadith in hadiths:
+            print(f"{hadith['hadithNumber']}:\nUrdu: {hadith['hadithUrdu']}\nEnglish: {hadith['hadithEnglish']}\n")
+    else:
+        print("Error fetching Hadiths.")
+
+#Al-QURAN
+
+def quran_menu():
+    while True:
+        print("\n📖 Quran Menu 📖")
+        print("1. List Surahs")
+        print("2. Get Surah Ayahs")
+        print("3. Get Ayah Translation")
+        print("4. Listen to Ayah Recitation")
+        print("5. Back to Main Menu")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            list_surahs()
+        elif choice == "2":
+            surah = input("Enter Surah number: ")
+            get_surah(surah)
+        elif choice == "3":
+            surah = input("Enter Surah number: ")
+            ayah = input("Enter Ayah number: ")
+            get_translation(surah, ayah)
+        elif choice == "4":
+            surah = input("Enter Surah number: ")
+            ayah = input("Enter Ayah number: ")
+            play_recitation(surah, ayah)
+        elif choice == "5":
+            break
+        else:
+            print("Invalid choice, try again.")
+
+#HADITH
+
+def hadith_menu():
+    while True:
+        print("\n Hadith Menu ")
+        print("1. List Hadith Books")
+        print("2. Get Chapters")
+        print("3. Get Hadiths from Chapter")
+        print("4. Back to Main Menu")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            list_hadith_books()
+        elif choice == "2":
+            book_slug = input("Enter Book Slug (e.g. bukhari): ")
+            get_chapters(book_slug)
+        elif choice == "3":
+            book_slug = input("Enter Book Slug: ")
+            chapter_number = input("Enter Chapter Number: ")
+            get_hadith(book_slug, chapter_number)
+        elif choice == "4":
+            break
+        else:
+            print("Invalid choice, try again.")
+
+#MAIN MENU
+
+def main():
+    while True:
+        print("\n Quran & Hadith Console App")
+        print("1. Quran Section")
+        print("2. Hadith Section")
+        print("3. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            quran_menu()
+        elif choice == "2":
+            hadith_menu()
+        elif choice == "3":
+            print("Exiting the App. JazakAllah Khair! ")
+            break
+        else:
+            print("Invalid choice, please try again.")
+
+# RUN APP
+if __name__ == "__main__":
+    main()
