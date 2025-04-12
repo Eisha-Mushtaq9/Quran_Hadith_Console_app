@@ -1,1 +1,1 @@
-# Quran_Hadith_Console_app
+quran hadith app
